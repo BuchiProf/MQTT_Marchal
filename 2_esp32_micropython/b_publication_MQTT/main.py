@@ -106,7 +106,8 @@ def heartbeat():
 	sleep( 0.2 )
 
 async def run_every( fn, min= 1, sec=None):
-	""" Execute a function fn every min minutes or sec secondes"""
+	""" Execution asynchrone de tâches
+	param : fonction, périodicité en min ou secondes"""
 	global led
 	wait_sec = sec if sec else min*60
 	while True:
