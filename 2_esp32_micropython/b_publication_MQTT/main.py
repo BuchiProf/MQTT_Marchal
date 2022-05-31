@@ -1,13 +1,13 @@
 # coding: utf8
 """ Mesures avec BME680
 
-	Envoi des données toutes les heures + 20 minutes
+	Envoi des données toutes les heures + 2 minutes
 	vers serveur MQTT
 
 
  """
 
-from machine import Pin, I2C, reset
+from machine import Pin, SoftI2C, reset
 from time import sleep, time
 from ubinascii import hexlify
 from network import WLAN
@@ -33,25 +33,6 @@ ERROR_REBOOT_TIME = 3600 # 1 h = 3600 sec
 led = Pin(13, Pin.OUT)
 led.value( 0 ) # eteindre
 
-def led_error( step ):
-    """gestion des erreur par clignotements de la DEL status"""
-	global led
-	t = time()
-	while ( time()-t ) < ERROR_REBOOT_TIME:
-		for i in range( 20 ):
-			led.value(not(led.value()))
-			sleep(0.100)
-		led.value( 1 ) # eteindre
-		sleep( 1 )
-		# clignote nbr fois
-		for i in range( step ):
-			led.value( 0 )
-			sleep( 0.5 )
-			led.value( 1 )
-			sleep( 0.5 )
-		sleep( 1 )
-	# Re-start the ESP
-	reset()
 
 #décommenter si interrupteur
 #if runapp.value() != 1:
@@ -63,32 +44,36 @@ led.value( 1 ) # allumer
 # --- Programme Pincipal ---
 from umqtt.simple import MQTTClient
 try:
-	q = MQTTClient( client_id = CLIENT_ID, server = MQTT_SERVER, user = MQTT_USER, password = MQTT_PSWD )
-	sMac = hexlify( WLAN().config( 'mac' ) ).decode()
-	q.set_last_will( topic="disconnect/%s" % CLIENT_ID , msg=sMac )
-	if q.connect() != 0:
-		led_error( step=1 )
+    q = MQTTClient( client_id = CLIENT_ID, server = MQTT_SERVER, user = MQTT_USER, password = MQTT_PSWD )
+    sMac = hexlify( WLAN().config( 'mac' ) ).decode()
+    q.set_last_will( topic="disconnect/%s" % CLIENT_ID , msg=sMac )
+    if q.connect() != 0:
+        #led_error( step=1 )
+        print("erreur 1")
 except Exception as e:
-	print( e )
-	# check MQTT_SERVER, MQTT_USER, MQTT_PSWD
-	led_error( step=2 )
+    print( e )
+    # check MQTT_SERVER, MQTT_USER, MQTT_PSWD
+    #led_error( step=2 )
+    print("erreur 2")
 
 #essai d'import de la bibliothèque du capteur
 try:
 	from bme680 import *
 except Exception as e:
 	print( e )
-	led_error( step=3 )
+	#led_error( step=3 )
+	print("erreur 3")
 
 # declare le bus i2c
-i2c = I2C( sda=Pin(22), scl=Pin(21) )
+i2c = SoftI2C( scl=Pin(22), sda=Pin(21) )
 
 # créer les capteurs
 try:
-	bme = BME680_I2C(i2c=i2c)
+    bme = BME680_I2C(i2c=i2c)
 except Exception as e:
-	print( e )
-	led_error( step=4 )
+    print( e )
+    #led_error( step=4 )
+    print("erreur 4")
 
 try:
 	# annonce connexion objet
@@ -96,7 +81,8 @@ try:
 	q.publish( "connect/%s" % CLIENT_ID , sMac )
 except Exception as e:
 	print( e )
-	led_error( step=5 )
+	#led_error( step=5 )
+	print("erreur 5")
 
 import uasyncio as asyncio
 
@@ -132,8 +118,8 @@ async def run_every( fn, min= 1, sec=None):
 
 async def run_app_exit():
 	""" fin d'execution lorsque quitte la fonction """
-	global runapp
-	while runapp.value()==1:
+	runapp=1
+	while runapp==1:
 		await asyncio.sleep( 10 )
 	return
 
@@ -145,7 +131,8 @@ try:
 	loop.run_until_complete( run_app_exit() )
 except Exception as e :
 	print( e )
-	led_error( step=6 )
+	#led_error( step=6 )
+	print("erreur 6")
 
 loop.close()
 led.value( 0 ) # eteindre
