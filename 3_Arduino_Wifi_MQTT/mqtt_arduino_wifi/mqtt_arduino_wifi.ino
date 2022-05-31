@@ -15,33 +15,29 @@ const char topic[]  = "topic_1";          //déclaration des topic sur lesquelle
 const char topic2[]  = "topic_2";
 //const char topic3[]  = "topic_x";
 
-//interval d'envoi des messages (millisecondes)
-const long interval = 8000;
+//intervalle d'envoi des messages (millisecondes)
+const long interval = 10000;
 unsigned long previousMillis = 0;
-
-int count = 0;
 
 /*********************************************************/
 void setup() {
   
   Serial.begin(9600);
-  while (!Serial) {
-    ; // attente de connexion au port série
-  }
-
+  
   // tentative de connexion au wifi:
   Serial.print("Connexion en cours au point d'accès wifi : ");
   Serial.println(ssid);
   while (WiFi.begin(ssid, pass) != WL_CONNECTED) {
-    // erreur, recommence
+    // tant qu'on n'est pas connecté...
     Serial.print(".");
-    delay(5000);
+    delay(2000);
   }
 
   Serial.println("Connexion au point d'accès réussie");
   Serial.println();
-// Vous pouvez fournir un nom de client unique (obligatoire pour notre Broker), sinon le programme utilise Arduino-millis()
-// mqttClient.setId("IdClientPerso");
+// Vous pouvez fournir un nom de client unique (obligatoire pour notre Broker : publications anonymes refusées), 
+// sinon le programme utilise Arduino-millis()
+// mqttClient.setId("mon_ID_client");
 
   // Définition de l'identifiant et mot de passe du Broker MQTT
   mqttClient.setUsernamePassword(SECRET_BROKER, SECRET_BROKER_PASS);
@@ -68,7 +64,7 @@ void loop() {
   unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= interval) {
-    // envoi des messages périodiquement (interval a été défini à 8s)
+    // envoi des messages périodiquement (interval a été défini à 10s)
     previousMillis = currentMillis;
 
     //on lit des valeurs au hasard sur les entrées A0 et A1 pour l'exemple
@@ -82,8 +78,6 @@ void loop() {
     Serial.print("Envoi du message vers le topic : ");
     Serial.println(topic2);
     Serial.println(Rvalue2);
-
-   
 
     // envoi du message à l'aide d'une fonction print
     mqttClient.beginMessage(topic);
