@@ -11,6 +11,6 @@ mosquitto_pub -h 10.129.230.1 -t "ruche/temp" -m 22 -u id_user -P mdp
 
 
 
-# Le même message si l'on a pas choisi un serveur non protégé
+# Le même message si on a choisi un serveur non protégé par id et mot de passe
 #
 # mosquitto_pub -h 10.129.230.1 -t "ruche/temp" -m 22
