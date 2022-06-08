@@ -10,5 +10,5 @@ sudo apt-get install mosquitto
 #installation du client mosquitto
 sudo apt-get install mosquitto-clients
 # on en profite pour inclure la bibliothèque python
-sudo apt-get installe python-pip
+sudo apt-get install python3-pip
 sudo pip install paho-mqtt
